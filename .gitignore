@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.env
+docs/*.docx
+
+# Streamlit secrets — never commit
+.streamlit/secrets.toml
