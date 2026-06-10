@@ -1,3 +1,8 @@
+using OpenTelemetry;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -14,6 +19,8 @@ if (!File.Exists(configPath))
 
 var options = JsonSerializer.Deserialize<AppOptions>(File.ReadAllText(configPath), JsonOptions.CaseInsensitive)
     ?? throw new InvalidOperationException("Unable to parse appsettings.json");
+
+using var tracerProvider = BuildTracerProvider(options.Tracing);
 
 var httpClient = new HttpClient();
 var modelClient = new FoundryModelClient(httpClient, options.Foundry, options.Agent.SystemInstruction);
@@ -39,6 +46,34 @@ while (true)
 
     var response = await agent.HandleMessageAsync(input);
     Console.WriteLine($"Agent> {response}\n");
+}
+
+static TracerProvider? BuildTracerProvider(TracingOptions options)
+{
+    if (!options.Enabled)
+    {
+        return null;
+    }
+
+    if (!Uri.TryCreate(options.OtlpEndpoint, UriKind.Absolute, out var otlpUri))
+    {
+        Console.Error.WriteLine($"Invalid tracing endpoint: {options.OtlpEndpoint}");
+        return null;
+    }
+
+    return Sdk.CreateTracerProviderBuilder()
+        .SetResourceBuilder(
+            ResourceBuilder.CreateDefault().AddService(
+                serviceName: options.ServiceName,
+                serviceVersion: options.ServiceVersion))
+        .AddSource(OmniTracing.SourceName)
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter(exporterOptions =>
+        {
+            exporterOptions.Protocol = OtlpExportProtocol.HttpProtobuf;
+            exporterOptions.Endpoint = otlpUri;
+        })
+        .Build();
 }
 
 static string ResolveProjectRoot(string appBaseDirectory)
@@ -68,6 +103,12 @@ internal static class JsonOptions
     };
 }
 
+internal static class OmniTracing
+{
+    public const string SourceName = "OmniSupport.Agent";
+    public static readonly ActivitySource ActivitySource = new(SourceName);
+}
+
 internal sealed class OmniSupportAgent
 {
     private readonly FoundryModelClient _modelClient;
@@ -81,14 +122,23 @@ internal sealed class OmniSupportAgent
 
     public async Task<string> HandleMessageAsync(string userMessage)
     {
+        using var activity = OmniTracing.ActivitySource.StartActivity("agent.handle_message");
+        activity?.SetTag("agent.user_message.length", userMessage.Length);
+
         var decision = await _modelClient.GetDecisionAsync(userMessage);
+        activity?.SetTag("agent.intent", decision.Intent);
+        activity?.SetTag("agent.requires_tool", decision.RequiresTool);
 
         if (!decision.RequiresTool || string.IsNullOrWhiteSpace(decision.ToolName))
         {
+            activity?.SetTag("agent.path", "no_tool");
             return decision.Reply;
         }
 
+        activity?.SetTag("agent.path", "tool");
+        activity?.SetTag("agent.tool_name", decision.ToolName);
         var toolResult = await _toolGateway.ExecuteAsync(decision.ToolName, decision.ToolInput);
+        activity?.SetTag("agent.tool_success", toolResult.Success);
         return await _modelClient.ComposeFinalAnswerAsync(userMessage, decision, toolResult);
     }
 }
@@ -108,6 +158,9 @@ internal sealed class FoundryModelClient
 
     public async Task<AgentDecision> GetDecisionAsync(string userMessage)
     {
+        using var activity = OmniTracing.ActivitySource.StartActivity("model.get_decision");
+        activity?.SetTag("model.deployment", _options.Deployment);
+
         var decisionPrompt = """
 You are an orchestration engine for a customer support + sales + contract renewal assistant.
 Return JSON only.
@@ -169,10 +222,15 @@ Output schema:
                 decision.Reply = "I can help with repair requests, printer sales, or contract renewals. Could you share a bit more detail?";
             }
 
+            activity?.SetTag("model.intent", decision.Intent);
+            activity?.SetTag("model.requires_tool", decision.RequiresTool);
+            activity?.SetTag("model.tool_name", decision.ToolName);
+
             return decision;
         }
         catch
         {
+            activity?.SetStatus(ActivityStatusCode.Error);
             return new AgentDecision
             {
                 Intent = "general_support",
@@ -186,6 +244,12 @@ Output schema:
 
     public async Task<string> ComposeFinalAnswerAsync(string userMessage, AgentDecision decision, ToolExecutionResult toolResult)
     {
+        using var activity = OmniTracing.ActivitySource.StartActivity("model.compose_final_answer");
+        activity?.SetTag("model.deployment", _options.Deployment);
+        activity?.SetTag("model.intent", decision.Intent);
+        activity?.SetTag("model.tool_name", decision.ToolName);
+        activity?.SetTag("model.tool_success", toolResult.Success);
+
         var prompt = $$"""
 Given the customer message, orchestration decision, and tool execution result, compose a concise customer-facing response.
 
@@ -215,7 +279,12 @@ Rules:
 
     private async Task<string> CallModelAsync(object[] messages, double temperature)
     {
+        using var activity = OmniTracing.ActivitySource.StartActivity("model.chat_completion");
+        activity?.SetTag("model.deployment", _options.Deployment);
+        activity?.SetTag("model.temperature", temperature);
+
         var endpoint = BuildEndpoint();
+        activity?.SetTag("model.endpoint", endpoint);
         var payload = new
         {
             model = _options.Deployment,
@@ -233,9 +302,11 @@ Rules:
 
         using var response = await _httpClient.SendAsync(request);
         var body = await response.Content.ReadAsStringAsync();
+        activity?.SetTag("http.status_code", (int)response.StatusCode);
 
         if (!response.IsSuccessStatusCode)
         {
+            activity?.SetStatus(ActivityStatusCode.Error);
             throw new InvalidOperationException($"Foundry call failed: {(int)response.StatusCode} {response.ReasonPhrase}. Body: {body}");
         }
 
@@ -292,17 +363,23 @@ internal sealed class ApimToolGateway
 
     public async Task<ToolExecutionResult> ExecuteAsync(string toolName, JsonElement toolInput)
     {
+        using var activity = OmniTracing.ActivitySource.StartActivity("tool.execute");
+        activity?.SetTag("tool.name", toolName);
+
         if (!_options.ToolRoutes.TryGetValue(toolName, out var route) || string.IsNullOrWhiteSpace(route))
         {
+            activity?.SetStatus(ActivityStatusCode.Error);
             return ToolExecutionResult.Fail(toolName, "Tool route is not configured.");
         }
 
         if (string.IsNullOrWhiteSpace(_options.BaseUrl) || _options.BaseUrl.Contains("your-apim-name", StringComparison.OrdinalIgnoreCase))
         {
+            activity?.SetStatus(ActivityStatusCode.Error);
             return ToolExecutionResult.Fail(toolName, "APIM base URL is not configured.");
         }
 
         var url = CombineUrl(_options.BaseUrl, route);
+        activity?.SetTag("tool.url", url);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, url)
         {
@@ -321,9 +398,11 @@ internal sealed class ApimToolGateway
         {
             using var response = await _httpClient.SendAsync(request);
             var body = await response.Content.ReadAsStringAsync();
+            activity?.SetTag("http.status_code", (int)response.StatusCode);
 
             if (!response.IsSuccessStatusCode)
             {
+                activity?.SetStatus(ActivityStatusCode.Error);
                 return ToolExecutionResult.Fail(toolName, $"Tool call failed with HTTP {(int)response.StatusCode}: {body}");
             }
 
@@ -331,6 +410,7 @@ internal sealed class ApimToolGateway
         }
         catch (Exception ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error);
             return ToolExecutionResult.Fail(toolName, $"Tool call failed: {ex.Message}");
         }
     }
@@ -382,6 +462,7 @@ internal sealed class AppOptions
     public FoundryOptions Foundry { get; set; } = new();
     public ApimOptions Apim { get; set; } = new();
     public AgentOptions Agent { get; set; } = new();
+    public TracingOptions Tracing { get; set; } = new();
 }
 
 internal sealed class FoundryOptions
@@ -402,4 +483,12 @@ internal sealed class ApimOptions
 internal sealed class AgentOptions
 {
     public string SystemInstruction { get; set; } = string.Empty;
+}
+
+internal sealed class TracingOptions
+{
+    public bool Enabled { get; set; } = true;
+    public string ServiceName { get; set; } = "omnisupport-agent";
+    public string ServiceVersion { get; set; } = "1.0.0";
+    public string OtlpEndpoint { get; set; } = "http://localhost:4318";
 }

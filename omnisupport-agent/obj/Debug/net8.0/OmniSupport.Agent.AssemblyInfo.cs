@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OmniSupport.Agent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3de3821526c916449060dd819a77bb97f6293551")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5054d405c4802fcf5f715fd5006216338b9f051")]
 [assembly: System.Reflection.AssemblyProductAttribute("OmniSupport.Agent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OmniSupport.Agent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

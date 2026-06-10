@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SdkStyleMcpServer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d996c7cf6d5ce73425f46609f693738aaac7dc2")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a5054d405c4802fcf5f715fd5006216338b9f051")]
 [assembly: System.Reflection.AssemblyProductAttribute("SdkStyleMcpServer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SdkStyleMcpServer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
