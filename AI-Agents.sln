@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MCP", "MCP", "{60D02A9B-BD8A-21E2-79E7-27A6B3D0EB49}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp", "csharp", "{F14EF451-C57E-D449-7717-368E03DA10CC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdkStyleMcpServer", "MCP\csharp\SdkStyleMcpServer\SdkStyleMcpServer.csproj", "{6DA2AB0D-4199-4877-BA4B-0F4CD1D12D61}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SdkStyleMcpClient", "MCP\csharp\SdkStyleMcpClient\SdkStyleMcpClient.csproj", "{CE5BBD0B-53C5-4E34-8196-49D9BCD11032}"
@@ -48,11 +44,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{F14EF451-C57E-D449-7717-368E03DA10CC} = {60D02A9B-BD8A-21E2-79E7-27A6B3D0EB49}
-		{6DA2AB0D-4199-4877-BA4B-0F4CD1D12D61} = {F14EF451-C57E-D449-7717-368E03DA10CC}
-		{CE5BBD0B-53C5-4E34-8196-49D9BCD11032} = {F14EF451-C57E-D449-7717-368E03DA10CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {028B596D-3EDF-42E0-9629-0280B59D3BD6}
