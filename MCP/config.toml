@@ -1,0 +1,316 @@
+# MCP Server Configuration Example
+# This file demonstrates configuration patterns for production deployments
+
+# ============================================================================
+# SERVER SETTINGS
+# ============================================================================
+
+[server]
+name = "production-mcp-server"
+version = "1.0.0"
+host = "0.0.0.0"
+port = 8080
+
+# Transport mode: stdio, http, or sse
+transport = "http"
+
+# Environment: development, staging, production
+environment = "production"
+
+# ============================================================================
+# SECURITY
+# ============================================================================
+
+[security]
+# Enable authentication
+require_auth = true
+
+# Authentication method: api_key, oauth2, mtls
+auth_method = "api_key"
+
+# API key header name
+api_key_header = "X-API-Key"
+
+# Enable rate limiting
+rate_limiting = true
+rate_limit_per_minute = 100
+
+# Enable audit logging
+audit_logging = true
+audit_log_path = "/var/log/mcp/audit.log"
+
+# ============================================================================
+# DATABASE
+# ============================================================================
+
+[database]
+# Connection URL (use environment variable in production)
+# Format: postgresql://user:password@host:port/database
+url = "${DATABASE_URL}"
+
+# Connection pool settings
+pool_size = 10
+max_overflow = 20
+pool_timeout = 30
+
+# Query timeout (seconds)
+query_timeout = 10
+
+# ============================================================================
+# CACHING
+# ============================================================================
+
+[cache]
+# Enable caching
+enabled = true
+
+# Cache backend: memory, redis
+backend = "redis"
+
+# Redis connection (if backend = redis)
+redis_url = "${REDIS_URL}"
+
+# Default TTL (seconds)
+default_ttl = 300  # 5 minutes
+
+# Max cache size (MB)
+max_size_mb = 512
+
+# ============================================================================
+# OBSERVABILITY
+# ============================================================================
+
+[logging]
+# Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+level = "INFO"
+
+# Log format: json, text
+format = "json"
+
+# Log output: stdout, file
+output = "stdout"
+
+# Log file path (if output = file)
+file_path = "/var/log/mcp/server.log"
+
+# Enable request logging
+log_requests = true
+
+# Enable response logging
+log_responses = true
+
+[metrics]
+# Enable Prometheus metrics
+enabled = true
+
+# Metrics endpoint
+endpoint = "/metrics"
+
+# Metrics port
+port = 9090
+
+[tracing]
+# Enable distributed tracing
+enabled = true
+
+# Tracing backend: jaeger, zipkin, otlp
+backend = "otlp"
+
+# OTLP endpoint
+otlp_endpoint = "http://localhost:4317"
+
+# Sample rate (0.0 to 1.0)
+sample_rate = 0.1
+
+# ============================================================================
+# PERFORMANCE
+# ============================================================================
+
+[performance]
+# Worker processes
+workers = 4
+
+# Worker threads per process
+threads_per_worker = 2
+
+# Request timeout (seconds)
+request_timeout = 30
+
+# Max concurrent requests
+max_concurrent_requests = 1000
+
+# Enable async processing
+async_enabled = true
+
+# ============================================================================
+# TOOLS CONFIGURATION
+# ============================================================================
+
+[tools]
+# Enable/disable specific tools
+enabled_tools = [
+    "get_user",
+    "search_users",
+    "create_user",
+    "calculate_stats",
+    "validate_email"
+]
+
+# Tool-specific timeouts (seconds)
+[tools.timeouts]
+get_user = 5
+search_users = 10
+create_user = 15
+calculate_stats = 30
+validate_email = 2
+
+# Tool-specific rate limits (requests per minute)
+[tools.rate_limits]
+get_user = 1000
+search_users = 500
+create_user = 100
+calculate_stats = 50
+validate_email = 2000
+
+# ============================================================================
+# RESOURCES CONFIGURATION
+# ============================================================================
+
+[resources]
+# Enable/disable specific resources
+enabled_resources = [
+    "db://users",
+    "config://server"
+]
+
+# Resource caching
+[resources.caching]
+"db://users" = 300  # 5 minutes
+"config://server" = 3600  # 1 hour
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+
+[deployment]
+# Deployment mode: standalone, cluster
+mode = "cluster"
+
+# Health check endpoint
+health_check_path = "/health"
+
+# Readiness check endpoint
+readiness_check_path = "/ready"
+
+# Graceful shutdown timeout (seconds)
+shutdown_timeout = 30
+
+# ============================================================================
+# BACKUP & RECOVERY
+# ============================================================================
+
+[backup]
+# Enable automatic backups
+enabled = true
+
+# Backup schedule (cron format)
+schedule = "0 2 * * *"  # Daily at 2 AM
+
+# Backup retention days
+retention_days = 30
+
+# Backup storage path
+storage_path = "/backup/mcp"
+
+# ============================================================================
+# ALERTING
+# ============================================================================
+
+[alerting]
+# Enable alerting
+enabled = true
+
+# Alert channels: email, slack, pagerduty
+channels = ["slack", "email"]
+
+# Slack webhook URL
+slack_webhook_url = "${SLACK_WEBHOOK_URL}"
+
+# Email settings
+email_to = "ops@example.com"
+email_from = "mcp-server@example.com"
+
+# Alert thresholds
+[alerting.thresholds]
+error_rate_percent = 5.0  # Alert if error rate > 5%
+latency_p95_ms = 1000  # Alert if p95 latency > 1000ms
+cpu_usage_percent = 80  # Alert if CPU > 80%
+memory_usage_percent = 85  # Alert if memory > 85%
+
+# ============================================================================
+# FEATURE FLAGS
+# ============================================================================
+
+[features]
+# Enable experimental features
+experimental_tools = false
+
+# Enable debug mode
+debug_mode = false
+
+# Enable hot reload (development only)
+hot_reload = false
+
+# Enable CORS
+cors_enabled = true
+cors_origins = ["https://app.example.com"]
+
+# ============================================================================
+# COMPLIANCE
+# ============================================================================
+
+[compliance]
+# Enable GDPR compliance features
+gdpr_enabled = true
+
+# Data retention period (days)
+data_retention_days = 90
+
+# Enable data anonymization
+anonymization_enabled = true
+
+# PII fields to mask in logs
+pii_fields = ["email", "phone", "ssn"]
+
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
+
+# Required environment variables:
+# - DATABASE_URL: PostgreSQL connection string
+# - REDIS_URL: Redis connection string
+# - SLACK_WEBHOOK_URL: Slack webhook for alerts
+# - API_KEYS: Comma-separated list of valid API keys
+
+# Optional environment variables:
+# - LOG_LEVEL: Override logging level
+# - ENVIRONMENT: Override environment setting
+# - WORKERS: Override worker count
+
+# ============================================================================
+# USAGE EXAMPLES
+# ============================================================================
+
+# Load configuration in Python:
+# ```python
+# import tomli
+# 
+# with open("config.toml", "rb") as f:
+#     config = tomli.load(f)
+# 
+# server_port = config["server"]["port"]
+# db_url = os.getenv("DATABASE_URL")
+# ```
+
+# Command line override:
+# python mcp_server.py --config=config.toml --port=9000
