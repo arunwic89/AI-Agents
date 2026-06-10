@@ -1,0 +1,15 @@
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.GeneratedMSBuildEditorConfig.editorconfig
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.AssemblyInfoInputs.cache
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.AssemblyInfo.cs
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.csproj.CoreCompileInputs.cache
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.sourcelink.json
+D:\MyApps\AI-Agents\omnisupport-agent\bin\Debug\net8.0\OmniSupport.Agent.exe
+D:\MyApps\AI-Agents\omnisupport-agent\bin\Debug\net8.0\OmniSupport.Agent.deps.json
+D:\MyApps\AI-Agents\omnisupport-agent\bin\Debug\net8.0\OmniSupport.Agent.runtimeconfig.json
+D:\MyApps\AI-Agents\omnisupport-agent\bin\Debug\net8.0\OmniSupport.Agent.dll
+D:\MyApps\AI-Agents\omnisupport-agent\bin\Debug\net8.0\OmniSupport.Agent.pdb
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.dll
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\refint\OmniSupport.Agent.dll
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.pdb
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\OmniSupport.Agent.genruntimeconfig.cache
+D:\MyApps\AI-Agents\omnisupport-agent\obj\Debug\net8.0\ref\OmniSupport.Agent.dll
