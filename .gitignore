@@ -1,12 +1,3 @@
-__pycache__/
-*.pyc
 *.dll
-**/bin/
-**/obj/
-.env
-docs/*.docx
-omnisupport-agent/evaluation/results/*.json
-omnisupport-agent/evaluation/results/*.csv
-
-# Streamlit secrets — never commit
-.streamlit/secrets.toml
+[Bb]in/
+[Oo]bj/
