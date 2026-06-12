@@ -16,7 +16,7 @@ public class HelloTool1
     [Function(nameof(HelloTool1))]
     public string Run(
         [McpToolTrigger(nameof(HelloTool1), "Responds to the user with a hello message.")] ToolInvocationContext context,
-        [McpToolProperty(nameof(name), "The name of the person to greet.")] string? name
+        [McpToolProperty(nameof(name), "The name of the person to greet.", IsRequired = true)] string name
     )
     {
         _logger.LogInformation("C# MCP tool trigger function processed a request.");
