@@ -1,3 +1,5 @@
 *.dll
 [Bb]in/
 [Oo]bj/
+.vscode/mcp.json
+MCP/Function.Mcp/local.settings.json
